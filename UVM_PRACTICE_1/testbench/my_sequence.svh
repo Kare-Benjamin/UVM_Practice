@@ -2,12 +2,11 @@ class my_transaction extends uvm_sequence_item;
 
   `uvm_object_utils(my_transaction)
 
-  rand bit cmd;
-  rand int addr;
-  rand int data;
+  rand int data_in;
+  rand bit write_enable;
+  rand bit read_enable;
 
-  constraint c_addr { addr >= 0; addr < 256; }
-  constraint c_data { data >= 0; data < 256; }
+  constraint c_data_in { data_in >= 0; data_in < 256; }
 
   function new (string name = "");
     super.new(name);
@@ -24,7 +23,7 @@ class my_sequence extends uvm_sequence#(my_transaction);
   endfunction
 
   task body;
-    repeat(8) begin
+    repeat(14) begin
       req = my_transaction::type_id::create("req");
       start_item(req);
 
@@ -39,6 +38,13 @@ class my_sequence extends uvm_sequence#(my_transaction);
       // req.data = $urandom_range(0, 255);
 
       finish_item(req);
+    end
+    /* Manual stimuli generation */
+    repeat(16) begin
+        start_item(req);
+        req.read_enable = 1'b1;
+        req.write_enable = 1'b0; //Overwriting random value
+        finish_item(req);
     end
   endtask: body
 

@@ -22,8 +22,8 @@ module top;
   
   // Clock generator
   initial begin
-    dut_if1.clock = 0;
-    forever #5 dut_if1.clock = ~dut_if1.clock;
+    dut_if1.clk = 0;
+    forever #5 dut_if1.clk = ~dut_if1.clk;
   end
   
   initial begin
@@ -38,5 +38,5 @@ module top;
     $dumpfile("dump.vcd");
     $dumpvars(0, top);
   end
-  
+
 endmodule

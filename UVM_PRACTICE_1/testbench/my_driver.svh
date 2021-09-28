@@ -17,20 +17,20 @@ class my_driver extends uvm_driver #(my_transaction);
 
   task run_phase(uvm_phase phase);
     // First toggle reset
-    dut_vif.reset = 1;
-    @(posedge dut_vif.clock);
+    dut_vif.rst = 1;
+    @(posedge dut_vif.clk);
     #1;
-    dut_vif.reset = 0;
+    dut_vif.rst = 0;
     
     // Now drive normal traffic
     forever begin
       seq_item_port.get_next_item(req);
 
       // Wiggle pins of DUT
-      dut_vif.cmd  = req.cmd;
-      dut_vif.addr = req.addr;
-      dut_vif.data = req.data;
-      @(posedge dut_vif.clock);
+      dut_vif.data_in  = req.data_in;
+      dut_vif.read_enable = req.read_enable;
+      dut_vif.write_enable = req.write_enable;
+      @(posedge dut_vif.clk);
 
       seq_item_port.item_done();
     end
