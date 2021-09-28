@@ -4,6 +4,13 @@ import uvm_pkg::*;
 //----------------
 // environment env
 //----------------
+
+/*
+class stimuli extends uvm_env;
+  bit x;
+endclass
+*/
+
 class env extends uvm_env;
 
   virtual add_sub_if m_if;
@@ -23,6 +30,7 @@ class env extends uvm_env;
   task run_phase(uvm_phase phase);
     phase.raise_objection(this);
     `uvm_info("LABEL", "Started run phase.", UVM_HIGH);
+    
     /*
     rand int a;
     rand int b;
@@ -30,29 +38,54 @@ class env extends uvm_env;
     constraint b {b >= 0; b < 255;} // 8-bit
     */
     begin
-      
+      bit write_enable, read_enable, rst; 
+      int data_in; // 8-bit (could have used rand instead)
       @(m_if.cb);
         m_if.cb.rst <= 1'b1;
+        `uvm_info("LABEL", "Doing a reset", UVM_HIGH);
+      
+      /* Begin Write Phase */
+      repeat(6) @(m_if.cb) begin
 
-      repeat(7) @(m_if.cb) begin
-        m_if.cb.write_enable <= 1'b1; m_if.cb.read_enable <= 1'b0;
-        m_if.cb.rst <= 1'b0;
-        m_if.cb.data_in <= $urandom_range(0, 255); // 8-bit (could have used rand instead)
-      end
+        /* Stimuli generation */
+        write_enable = 1'b1; read_enable = 1'b0; rst = 1'b0; 
+        data_in = $urandom_range(0, 255); // 8-bit (could have used rand instead)
 
-      repeat(7) @(m_if.cb) begin
-        m_if.cb.write_enable <= 1'b0; m_if.cb.read_enable <= 1'b1;
-        m_if.cb.rst <= 1'b0;
-        m_if.cb.data_in <= $urandom_range(0, 255); // 8-bit (could have used rand instead)
-      end
+        /* driving the DUT */
+        m_if.cb.write_enable <= write_enable; m_if.cb.read_enable <= read_enable;
+        m_if.cb.rst <= rst; m_if.cb.data_in <= data_in;
+        
+        /* To monitor */
+        `uvm_info(
+          "RESULT", 
+          $sformatf("Data in is %0d, R/W enable: %0d/%0d and Data out: %0d",
+          data_in, read_enable, write_enable, m_if.cb.data_out), UVM_HIGH);
+      end /* End Write Phase */
 
-      /*  
-      `uvm_info(
-        "RESULT", 
-        $sformatf("Data in is %0d, R/W enable: %0d/%0d and Data out: %0d",
-        data_in, read_enable, write_enable, m_if.cb.data_out), UVM_HIGH);
-      */
+      /* One clock delay */
+      repeat(1) @(m_if.cb)
+
+      /* Begin Read Phase */
+      repeat(8) @(m_if.cb) begin
+
+        /* Stimuli generation */
+        write_enable = 1'b0; read_enable = 1'b1; rst = 1'b0; 
+        data_in = $urandom_range(0, 255); // 8-bit (could have used rand instead)
+
+        /* driving the DUT */
+        m_if.cb.write_enable <= write_enable; m_if.cb.read_enable <= read_enable;
+        m_if.cb.rst <= rst; m_if.cb.data_in <= data_in;
+        
+        /* To monitor */
+        `uvm_info(
+          "RESULT", 
+          $sformatf("Data in is %0d, R/W enable: %0d/%0d and Data out: %0d",
+          data_in, read_enable, write_enable, m_if.cb.data_out), UVM_HIGH);
+      end /* End Read Phase */
     end
+
+    /* One clock delay */
+      repeat(1) @(m_if.cb)
 
     `uvm_info("LABEL", "Finished run phase.", UVM_HIGH);
     phase.drop_objection(this);
