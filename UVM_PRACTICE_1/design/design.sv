@@ -5,6 +5,7 @@ interface dut_if;
   logic cmd;
   logic [7:0] addr;
   logic [7:0] data;
+  logic [7:0] x_or_data;
 endinterface
 
 `include "uvm_macros.svh"
@@ -20,5 +21,6 @@ module dut(dut_if dif);
       `uvm_info("DUT",
                 $sformatf("Received cmd=%b, addr=0x%2h, data=0x%2h",
                           dif.cmd, dif.addr, dif.data), UVM_MEDIUM)
+    x_or_data <= data;            
     end
 endmodule
