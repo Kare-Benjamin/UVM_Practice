@@ -29,34 +29,29 @@ class env extends uvm_env;
     constraint a {a >= 0; a < 255;} // 8-bit
     constraint b {b >= 0; b < 255;} // 8-bit
     */
-    begin 
+    begin
+      
       @(m_if.cb);
         m_if.cb.rst <= 1'b1;
-      repeat(2) @(m_if.cb);
-    end
 
-    begin
-      int data_in = $urandom_range(0, 255);
-      bit rst = 1'b0;
-      bit write_enable = 1'b1;
-      bit read_enable = 1'b0;
-      @(m_if.cb);
-        m_if.cb.data_in <= $urandom_range(0, 255);
-        m_if.cb.rst <= rst;
-        m_if.cb.write_enable <= write_enable;
-        m_if.cb.read_enable <= read_enable;
-        //m_if.cb.doAdd <= 1'b1;
-      repeat(6) @(m_if.cb);
+      repeat(7) @(m_if.cb) begin
+        m_if.cb.write_enable <= 1'b1; m_if.cb.read_enable <= 1'b0;
+        m_if.cb.rst <= 1'b0;
+        m_if.cb.data_in <= $urandom_range(0, 255); // 8-bit (could have used rand instead)
+      end
 
-      @(m_if.cb);
-        m_if.cb.read_enable <= 1'b1;
-      	m_if.cb.write_enable <= 1'b0;
-      repeat(6) @(m_if.cb);
+      repeat(7) @(m_if.cb) begin
+        m_if.cb.write_enable <= 1'b0; m_if.cb.read_enable <= 1'b1;
+        m_if.cb.rst <= 1'b0;
+        m_if.cb.data_in <= $urandom_range(0, 255); // 8-bit (could have used rand instead)
+      end
 
+      /*  
       `uvm_info(
         "RESULT", 
         $sformatf("Data in is %0d, R/W enable: %0d/%0d and Data out: %0d",
         data_in, read_enable, write_enable, m_if.cb.data_out), UVM_HIGH);
+      */
     end
 
     `uvm_info("LABEL", "Finished run phase.", UVM_HIGH);
