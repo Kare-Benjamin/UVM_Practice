@@ -1,5 +1,15 @@
-// Simple adder/subtractor module
-module ADD_SUB (
+/* Created 2021 by Kåre-Benjamin H Rørvik 
+ * This is a simple synchronous FIFO, with asynchronous reset.
+ * THIS FIFO WILL OVERWRITE WHEN FULL
+ * In the current mode of operation you may only read or write at the same time.
+ * (write_enable takes priority of read_enable).
+ * The FIFO uses two dedicated pointers one for read and one for write.
+ * To store the inputs a [x][y] memory is used.
+ * The parameters FIFO_DEPTH and FIFO_W is used to adjust the fifo properties.
+ * Where the width defines how wide the input may be, and the depth is the n
+ * inputs that may be stored (the depth of the FIFO).
+ */
+module FIFO (
     input logic clk,
     output logic [7:0] data_out0,
     output logic full0,
@@ -51,11 +61,9 @@ module ADD_SUB (
     end
 endmodule
 
-//---------------------------------------
-// Interface for the adder/subtractor DUT
-//---------------------------------------
+/* Interface for the FIFO */
 
-interface add_sub_if(
+interface FIFO_if(
     input clk,
     input [7:0] data_out, // out
     input full,           // out
@@ -74,14 +82,12 @@ interface add_sub_if(
     output rst;
     output write_enable;
     output read_enable;
-  endclocking // cb
+  endclocking 
 
-endinterface: add_sub_if
+endinterface: FIFO_if
 
-//---------------
-// Interface bind
-//---------------
-bind ADD_SUB add_sub_if add_sub_if0(
+/* Binding the interface */
+bind FIFO FIFO_if FIFO_if0(
     .clk(clk),
     .data_out(data_out0),
     .full(full0),
